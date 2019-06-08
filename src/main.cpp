@@ -57,7 +57,10 @@ int main(){
   NorthSouth = 'F',       // North South direction
   EastWest = 'F';         // East West direction
   uint16_t    id;         // Node identification
-  int         time[3];    // UTC Time.
+  // UTC Time.
+  char        hour[2];
+  char        minute[2];
+  char        second[2];
   float       g[3],       // Gyroscope
   acc[3]                  // Accelerometer
   ,mag[3],                // Magnetrometer
@@ -98,6 +101,9 @@ int main(){
     xbee.set_channel_mask(NEW_CHANNEL_MASK);
     xbee.write_config();
   }
+  memset(hour,0,2);
+  memset(minute,0,2);
+  memset(second,0,2);
 
   mq4_heater = 1;         // Set heater on, for Mq4 sensor set up.
   GpsPwrPin = 1;          // Set gps on.
@@ -176,17 +182,16 @@ int main(){
         }
         if (tgps.time.isValid())
         {
-          time[0] = tgps.time.hour();
-          time[1] = tgps.time.minute();
-          time[2] = tgps.time.second();
-        }else{
-          time[0] = 0;
-          time[1] = 0;
-          time[2] = 0;
+          second[1] = (tgps.time.second()%10)+48;
+          second[0] = (tgps.time.second()/10) +48;
+          minute[1] = (tgps.time.minute() %10)+48;
+          minute[0] = (tgps.time.minute()/10) +48;
+          hour[1] = (tgps.time.hour()%10)+48;
+          hour[0] = (tgps.time.hour()/10) +48;
         }
         //Store data into a vector.
-        sprintf(data,"%4x,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.2f,%.2f,%.2f,%d%d%d,%.3f,%.3f,%.2f,%c,%c,%.2f,%.2f,%.2f",id,
-        g[0], g[1], g[2],acc[0],acc[1], acc[2], mag[0], mag[1], mag[2],Bpress, dht_h,dht_t,MQ4_data.ch4,piezo, time[0],time[1],time[2], lon, lat, speed, NorthSouth, EastWest, Balt, alt,vbat);
+        sprintf(data,"%4x,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.2f,%.2f,%.2f,%c%c%c%c%c%c,%.3f,%.3f,%.2f,%c,%c,%.2f,%.2f,%.2f",id,
+        g[0], g[1], g[2],acc[0],acc[1], acc[2], mag[0], mag[1], mag[2],Bpress, dht_h,dht_t,MQ4_data.ch4,piezo, hour[0], hour[1], minute[0], minute[1],second[0],second[1], lon, lat, speed, NorthSouth, EastWest, Balt, alt,vbat);
         while(send_data_to_coordinator(xbee, data) != TxStatusSuccess) // try to send data, every 100 ms
         {
           #if defined(DEBUG_LEDS)

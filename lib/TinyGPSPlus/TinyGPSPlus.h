@@ -246,6 +246,7 @@ public:
   TinyGPSDecimal hdop;
   char NorthSouth;
   char EastWest;
+
   static const char *libraryVersion() { return _GPS_VERSION; }
 
   static double distanceBetween(double lat1, double long1, double lat2, double long2);
